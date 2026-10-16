@@ -1,0 +1,31 @@
+const sqlite3 = require('sqlite3').verbose()
+
+const db = new sqlite3.Database('./food.db')
+
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      calories REAL NOT NULL CHECK (calories >= 0)
+    )
+  `)
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS diary_entries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER,
+      product_name TEXT NOT NULL,
+      grams REAL NOT NULL CHECK (grams > 0),
+      calories REAL NOT NULL CHECK (calories >= 0),
+      date TEXT NOT NULL,
+      FOREIGN KEY (product_id)
+        REFERENCES products(id)
+        ON DELETE SET NULL
+    )
+  `)
+})
+
+db.run('PRAGMA foreign_keys = ON')
+
+module.exports = db
